@@ -118,8 +118,9 @@ x_test, y_test = naca(m=m_test,p=p,t=t_test,num_pts=num_pts)
 x_test_rot, y_test_rot =rotation(x_rot, y_rot, x_test, rot_test, y_test)
 test_vector = np.concatenate((x_test_rot, y_test_rot))
 
-r = 10
+r = 4
 U_r = modes[:, :r]
+print("U_r", U_r)
 a_test = U_r.T @ (test_vector-mean_geom)
 #print("a_test ", a_test)
 test_reconstructed = mean_geom + U_r @ a_test
@@ -136,8 +137,10 @@ print(f"Relative reconstruction error: {relative_error*100:.4f}%")
 ################################################################################################
 # test and reconstructed airfoil
 
+'''
 x_reconstructed = test_reconstructed[:num_nodes]
 y_reconstructed = test_reconstructed[num_nodes:]
+#print("x_recon", x_reconstructed)
 
 plt.figure(figsize=(9, 5))
 plt.plot(x_test_rot, y_test_rot,'k-', linewidth=2,label="Original test geometry")
@@ -149,6 +152,35 @@ plt.axis("equal")
 plt.grid(True)
 plt.legend()
 plt.show()
+'''
+
+x_recon = []
+y_recon = []
+
+# plot for different number of modes
+for i in range(1,r):
+    U_r = modes[:, :i]
+    a_test = U_r.T @ (test_vector-mean_geom)
+    #print("a_test ", a_test)
+    test_reconstructed = mean_geom + U_r @ a_test
+    error = np.linalg.norm(test_vector-test_reconstructed)
+    x_reconstructed = test_reconstructed[:num_nodes]
+    y_reconstructed = test_reconstructed[num_nodes:]
+    x_recon.append(x_reconstructed)
+    y_recon.append(y_reconstructed)
+    #print("len", len(x_recon))
+    plt.figure(figsize=(9, 5))
+    plt.plot(x_test_rot, y_test_rot,'k-', linewidth=2,label="Original test geometry")
+    plt.plot(x_recon[i-1], y_recon[i-1],'r--', linewidth=2,label=f"POD reconstruction ({i} modes)")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.title("POD Reconstruction with new Parameters")
+    plt.axis("equal")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+
 ################################################################################################
 # error vs num POD modes
 
